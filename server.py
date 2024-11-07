@@ -113,15 +113,18 @@ def store_encrypted_message():
 def create_user():
     try:
         data = request.get_json()
+        
+        # Input validation
+        required_fields = ['full_name', 'user_name', 'password']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
         full_name = data['full_name']
         user_name = data['user_name']
         password = data['password']
-
         # Check if the username already exists
         with get_db_cursor() as cur:
             cur.execute('SELECT user_name FROM "User" WHERE user_name = %s', (user_name,))
             existing_user = cur.fetchone()
-
         if existing_user:
             # Generate suggested usernames
             suggestions = [f"{user_name}_{i}" for i in range(1, 4)]
@@ -135,23 +138,25 @@ def create_user():
             return jsonify({
                 "error": "Username already exists",
                 "suggested_usernames": valid_suggestions
-            }), 400
-
+            }), 409  # Using 409 Conflict for existing resource
         # Hash the password
         hashed_password = generate_password_hash(password)
-
         # Insert new user into the database
         with get_db_cursor() as cur:
             cur.execute("""
                 INSERT INTO "User" (full_name, user_name, password)
                 VALUES (%s, %s, %s)
             """, (full_name, user_name, hashed_password))
-
+            cur.connection.commit()  # Explicitly commit the transaction
         return jsonify({"message": f"User '{user_name}' created successfully"}), 201
-
+    except psycopg2.Error as e:
+        # Log the database-specific error
+        app.logger.error(f"Database error: {str(e)}")
+        return jsonify({"error": "Database error occurred"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+        # Log the general error
+        app.logger.error(f"Unexpected error in create_user: {str(e)}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 # New API: Login User
 @app.route('/login_user', methods=['POST'])
