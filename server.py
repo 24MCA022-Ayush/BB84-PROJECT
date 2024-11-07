@@ -107,47 +107,53 @@ def store_encrypted_message():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+z
+# New API: Create User
 @app.route('/create_user', methods=['POST'])
 def create_user():
     try:
         data = request.get_json()
-        
-        # Validate input lengths server-side
-        full_name = data.get('full_name', '').strip()
-        user_name = data.get('user_name', '').strip()
-        password = data.get('password', '').strip()
-        
-        # Server-side validation
-        if not (3 <= len(full_name) <= 50):
-            return jsonify({"error": "Full name must be 3-50 characters"}), 400
-        
-        if not (3 <= len(user_name) <= 30):
-            return jsonify({"error": "Username must be 3-30 characters"}), 400
-        
-        if not (3 <= len(password) <= 30):
-            return jsonify({"error": "Password must be 3-30 characters"}), 400
-        
-        # Truncate if somehow longer
-        full_name = full_name[:50]
-        user_name = user_name[:30]
-        password = password[:30]
-        
-        # Rest of your existing user creation logic
+        full_name = data['full_name']
+        user_name = data['user_name']
+        password = data['password']
+
+        # Check if the username already exists
+        with get_db_cursor() as cur:
+            cur.execute('SELECT user_name FROM "User" WHERE user_name = %s', (user_name,))
+            existing_user = cur.fetchone()
+
+        if existing_user:
+            # Generate suggested usernames
+            suggestions = [f"{user_name}_{i}" for i in range(1, 4)]
+            with get_db_cursor() as cur:
+                # Filter out suggestions that already exist
+                valid_suggestions = []
+                for suggestion in suggestions:
+                    cur.execute('SELECT 1 FROM "User" WHERE user_name = %s', (suggestion,))
+                    if not cur.fetchone():
+                        valid_suggestions.append(suggestion)
+            return jsonify({
+                "error": "Username already exists",
+                "suggested_usernames": valid_suggestions
+            }), 400
+
+        # Hash the password
         hashed_password = generate_password_hash(password)
-        
+
+        # Insert new user into the database
         with get_db_cursor() as cur:
             cur.execute("""
                 INSERT INTO "User" (full_name, user_name, password)
                 VALUES (%s, %s, %s)
             """, (full_name, user_name, hashed_password))
-        
-        return jsonify({"message": "User created successfully", "status": "success"}), 201
-    
+
+        return jsonify({"message": f"User '{user_name}' created successfully"}), 201
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-# Login User API
+
+
+# New API: Login User
 @app.route('/login_user', methods=['POST'])
 def login_user():
     try:
@@ -155,89 +161,23 @@ def login_user():
         user_name = data['user_name']
         password = data['password']
 
+        # Verify username and password
         with get_db_cursor() as cur:
-            # Get user details
-            cur.execute("""
-                SELECT user_id, password, iss_login 
-                FROM "User" 
-                WHERE user_name = %s
-            """, (user_name,))
-            
+            cur.execute('SELECT user_id, password FROM "User" WHERE user_name = %s', (user_name,))
             user = cur.fetchone()
-            
-            if not user:
-                return jsonify({
-                    "error": "User not found"
-                }), 404
 
-            user_id, stored_password, is_logged_in = user
+        if not user or not check_password_hash(user[1], password):
+            return jsonify({"error": "Invalid username or password"}), 400
 
-            # Verify password
-            if not check_password_hash(stored_password, password):
-                return jsonify({
-                    "error": "Invalid password"
-                }), 401
-
-            # Check if user is already logged in
-            if is_logged_in:
-                return jsonify({
-                    "error": "User already logged in from another session"
-                }), 400
-
-            # Update login status
-            cur.execute("""
-                UPDATE "User" 
-                SET iss_login = TRUE 
-                WHERE user_id = %s
-            """, (user_id,))
-
-            # Get user details for response
-            cur.execute("""
-                SELECT full_name, user_name 
-                FROM "User" 
-                WHERE user_id = %s
-            """, (user_id,))
-            
-            user_details = cur.fetchone()
-            full_name, user_name = user_details
-
-            return jsonify({
-                "message": "Login successful",
-                "user_id": user_id,
-                "full_name": full_name,
-                "user_name": user_name
-            }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Add a logout endpoint
-@app.route('/logout_user', methods=['POST'])
-def logout_user():
-    try:
-        data = request.get_json()
-        user_id = data['user_id']
-
+        # Update `iss_login` field to True
         with get_db_cursor() as cur:
-            cur.execute("""
-                UPDATE "User" 
-                SET iss_login = FALSE 
-                WHERE user_id = %s
-                RETURNING user_name
-            """, (user_id,))
-            
-            result = cur.fetchone()
-            if not result:
-                return jsonify({
-                    "error": "User not found"
-                }), 404
+            cur.execute('UPDATE "User" SET iss_login = TRUE WHERE user_id = %s', (user[0],))
 
-            return jsonify({
-                "message": f"User {result[0]} logged out successfully"
-            }), 200
+        return jsonify({"message": "Login successful"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.errorhandler(404)
 def not_found_error(error):
