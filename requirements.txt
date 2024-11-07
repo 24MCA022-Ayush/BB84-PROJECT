@@ -1,5 +1,5 @@
 # requirements.txt
-Flask==2.0.1
+Flask==2.3.0
 cirq==1.2.0
 psycopg2-binary==2.9.9
 gunicorn==20.1.0
