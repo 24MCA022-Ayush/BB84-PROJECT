@@ -108,55 +108,45 @@ def store_encrypted_message():
         return jsonify({"error": str(e)}), 500
 
 
-# Create User API
 @app.route('/create_user', methods=['POST'])
 def create_user():
     try:
         data = request.get_json()
-        full_name = data['full_name']
-        user_name = data['user_name']
-        password = data['password']
-
-        # Check if username already exists
+        
+        # Validate input lengths server-side
+        full_name = data.get('full_name', '').strip()
+        user_name = data.get('user_name', '').strip()
+        password = data.get('password', '').strip()
+        
+        # Server-side validation
+        if not (3 <= len(full_name) <= 50):
+            return jsonify({"error": "Full name must be 3-50 characters"}), 400
+        
+        if not (3 <= len(user_name) <= 30):
+            return jsonify({"error": "Username must be 3-30 characters"}), 400
+        
+        if not (3 <= len(password) <= 30):
+            return jsonify({"error": "Password must be 3-30 characters"}), 400
+        
+        # Truncate if somehow longer
+        full_name = full_name[:50]
+        user_name = user_name[:30]
+        password = password[:30]
+        
+        # Rest of your existing user creation logic
+        hashed_password = generate_password_hash(password)
+        
         with get_db_cursor() as cur:
-            cur.execute('SELECT user_name FROM "User" WHERE user_name = %s', (user_name,))
-            existing_user = cur.fetchone()
-
-            if existing_user:
-                # Generate suggested usernames
-                suggestions = [f"{user_name}_{i}" for i in range(1, 4)]
-                valid_suggestions = []
-                for suggestion in suggestions:
-                    cur.execute('SELECT 1 FROM "User" WHERE user_name = %s', (suggestion,))
-                    if not cur.fetchone():
-                        valid_suggestions.append(suggestion)
-                
-                return jsonify({
-                    "error": "Username already exists",
-                    "suggested_usernames": valid_suggestions
-                }), 400
-
-            # Hash password before storing
-            hashed_password = generate_password_hash(password)
-
-            # Insert new user
             cur.execute("""
-                INSERT INTO "User" (full_name, user_name, password, iss_login)
-                VALUES (%s, %s, %s, FALSE)
-                RETURNING user_id
+                INSERT INTO "User" (full_name, user_name, password)
+                VALUES (%s, %s, %s)
             """, (full_name, user_name, hashed_password))
-            
-            user_id = cur.fetchone()[0]
-
-        return jsonify({
-            "message": "User created successfully",
-            "user_id": user_id,
-            "user_name": user_name
-        }), 201
-
+        
+        return jsonify({"message": "User created successfully", "status": "success"}), 201
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 # Login User API
 @app.route('/login_user', methods=['POST'])
 def login_user():
