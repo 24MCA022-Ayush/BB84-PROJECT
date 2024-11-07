@@ -107,7 +107,7 @@ def store_encrypted_message():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-z
+
 # New API: Create User
 @app.route('/create_user', methods=['POST'])
 def create_user():
