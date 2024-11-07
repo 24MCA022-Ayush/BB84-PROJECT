@@ -79,6 +79,11 @@ def receive_bases():
                 sifted_key.append(alice_bits[i])
         
         server_state.final_key = privacy_amplification(sifted_key)
+        
+        # Print the server_state.bob_bases
+        print("Final Key :", server_state.final_key)
+        
+        
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
