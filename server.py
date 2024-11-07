@@ -104,7 +104,6 @@ def store_encrypted_message():
             cur.execute("""
                 INSERT INTO "Message" ("sender_id", "receiver_id", "message", "status")
                 VALUES (%s, %s, %s, %s)
-                RETURNING id
             """, (1, 2, decrypted_message, True))
             
         return jsonify({
