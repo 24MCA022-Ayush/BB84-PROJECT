@@ -84,7 +84,7 @@ def receive_bases():
         print("Final Key :", server_state.final_key)
         
         
-        return jsonify({"status": "success"})
+        return jsonify({"status": "success", "Final_Key": server_state.final_key})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
