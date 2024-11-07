@@ -80,11 +80,7 @@ def receive_bases():
         
         server_state.final_key = privacy_amplification(sifted_key)
         
-        # Print the server_state.bob_bases
-        print("Final Key :", server_state.final_key)
-        
-        
-        return jsonify({"status": "success", "Final_Key": server_state.final_key})
+        return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -97,17 +93,13 @@ def store_encrypted_message():
 
         decrypted_message = decrypt_message(server_state.final_key, encrypted_bits)
 
-        # Print the server_state.bob_bases
-        print("Decrypted Message :", decrypted_message)
-        
         with get_db_cursor() as cur:
             cur.execute("""
                 INSERT INTO "Message" ("sender_id", "receiver_id", "message", "status")
                 VALUES (%s, %s, %s, %s)
-            """, (1, 2, decrypted_message, True))
+            """, (1, 2, decrypted_message, False))
             
         return jsonify({
-            "status": "success",
             "message": "Message stored successfully"
         })
     except Exception as e:
