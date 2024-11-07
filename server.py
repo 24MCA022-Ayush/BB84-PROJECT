@@ -91,6 +91,9 @@ def store_encrypted_message():
         encrypted_bits = json.loads(encrypted_message)
 
         decrypted_message = decrypt_message(server_state.final_key, encrypted_bits)
+
+        # Print the server_state.bob_bases
+        print("Decrypted Message :", decrypted_message)
         
         with get_db_cursor() as cur:
             cur.execute("""
