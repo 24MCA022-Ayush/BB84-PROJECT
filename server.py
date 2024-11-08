@@ -147,7 +147,6 @@ def login_user():
         with get_db_cursor() as cur:
             cur.execute('SELECT "user_id", "password" FROM "User" WHERE "user_name" = %s', (user_name,))
             user = cur.fetchone()
-            return jsonify({"message": user})
 
         if not user or not check_password_hash(user[1], password):
             return jsonify({"error": "Invalid username or password"}), 400
