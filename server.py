@@ -148,8 +148,8 @@ def login_user():
             cur.execute('SELECT "user_id", "password" FROM "User" WHERE "user_name" = %s', (user_name,))
             user = cur.fetchone()
 
-        if not user or not check_password_hash(user[1], password):
-            return jsonify({"error": "Invalid username or password"}), 400
+            if not user or not check_password_hash(user[1], password):
+                return jsonify({"error": "Invalid username or password"}), 400
 
         # Update `iss_login` field to True
         with get_db_cursor() as cur:
