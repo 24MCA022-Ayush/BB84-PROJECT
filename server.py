@@ -95,14 +95,14 @@ def store_encrypted_message():
 
         decrypted_message = decrypt_message(server_state.final_key, encrypted_bits)
 
-        with get_db_cursor() as cur:
-            cur.execute("""
-                INSERT INTO "Message" ("sender_id", "receiver_id", "message", "status")
-                VALUES (%s, %s, %s, %s)
-            """, (1, 2, decrypted_message, False))
+        #with get_db_cursor() as cur:
+        #    cur.execute("""
+        #        INSERT INTO "Message" ("sender_id", "receiver_id", "message", "status")
+        #        VALUES (%s, %s, %s, %s)
+        #    """, (1, 2, decrypted_message, False))
             
         return jsonify({
-            "message": "Message stored successfully"
+            "message": "Message stored successfully\n\n"
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -118,7 +118,6 @@ def create_user():
         pas = data['password']
 
         # Insert new user into the database
-
         
         with get_db_cursor() as cur:
             try:
