@@ -141,7 +141,7 @@ def login_user():
 
         # Verify username and password
         with get_db_cursor() as cur:
-            cur.execute('SELECT "user_id", "password" FROM "User" WHERE "user_name" = %s', (user_name))
+            cur.execute('SELECT "user_id", "password" FROM "User" WHERE "user_name" = %s', (user_name,))
             user = cur.fetchone()
 
         if not user or not check_password_hash(user[1], password):
@@ -149,7 +149,7 @@ def login_user():
 
         # Update `iss_login` field to True
         with get_db_cursor() as cur:
-            cur.execute('UPDATE "User" SET "iss_login" = TRUE WHERE "user_id" = %s', (user[0]))
+            cur.execute('UPDATE "User" SET "iss_login" = TRUE WHERE "user_id" = %s', (user[0],))
 
         return jsonify({"message": "Login successful"}), 200
 
