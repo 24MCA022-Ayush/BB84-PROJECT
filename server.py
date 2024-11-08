@@ -119,7 +119,7 @@ def create_user():
 
         # Check if the username already exists
         with get_db_cursor() as cur:
-            cur.execute('SELECT user_name FROM "User" WHERE user_name = %s', (user_name,))
+            cur.execute('SELECT "user_name" FROM "User" WHERE "user_name" = %s', (user_name,))
             existing_user = cur.fetchone()
 
         if existing_user:
@@ -129,7 +129,7 @@ def create_user():
                 # Filter out suggestions that already exist
                 valid_suggestions = []
                 for suggestion in suggestions:
-                    cur.execute('SELECT 1 FROM "User" WHERE user_name = %s', (suggestion,))
+                    cur.execute('SELECT 1 FROM "User" WHERE "user_name" = %s', (suggestion,))
                     if not cur.fetchone():
                         valid_suggestions.append(suggestion)
             return jsonify({
@@ -143,7 +143,7 @@ def create_user():
         # Insert new user into the database
         with get_db_cursor() as cur:
             cur.execute("""
-                INSERT INTO "User" (full_name, user_name, password)
+                INSERT INTO "User" ("full_name", "user_name", "password")
                 VALUES (%s, %s, %s)
             """, (full_name, user_name, hashed_password))
 
