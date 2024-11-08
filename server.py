@@ -113,41 +113,19 @@ def store_encrypted_message():
 def create_user():
     try:
         data = request.get_json()
-        full_name = data['full_name']
-        user_name = data['user_name']
-        password = data['password']
-
-        # Check if the username already exists
-        with get_db_cursor() as cur:
-            cur.execute('SELECT "user_name" FROM "User" WHERE "user_name" = %s', (user_name,))
-            existing_user = cur.fetchone()
-
-        if existing_user:
-            # Generate suggested usernames
-            suggestions = [f"{user_name}_{i}" for i in range(1, 4)]
-            with get_db_cursor() as cur:
-                # Filter out suggestions that already exist
-                valid_suggestions = []
-                for suggestion in suggestions:
-                    cur.execute('SELECT 1 FROM "User" WHERE "user_name" = %s', (suggestion,))
-                    if not cur.fetchone():
-                        valid_suggestions.append(suggestion)
-            return jsonify({
-                "error": "Username already exists",
-                "suggested_usernames": valid_suggestions
-            }), 400
-
-        # Hash the password
-        hashed_password = generate_password_hash(password)
+        fname = data['full_name']
+        uname = data['user_name']
+        pas = data['password']
 
         # Insert new user into the database
+
         with get_db_cursor() as cur:
             cur.execute("""
                 INSERT INTO "User" ("full_name", "user_name", "password")
                 VALUES (%s, %s, %s)
-            """, (full_name, user_name, hashed_password))
+            """, (fname, uname, pas))
 
-        return jsonify({"message": f"User '{user_name}' created successfully"}), 201
+        return jsonify({"message": f"User '{uname}' created successfully"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
