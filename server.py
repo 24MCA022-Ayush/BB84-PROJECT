@@ -158,6 +158,26 @@ def login_user():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# New API: Logout User
+@app.route('/logout_user', methods=['POST'])
+def logout_user():
+    try:
+        data = request.get_json()
+        user_name = data['user_name']
+
+        # Verify username and password
+        with get_db_cursor() as cur:
+            cur.execute('SELECT "user_id" FROM "User" WHERE "user_name" = %s', (user_name,))
+            user = cur.fetchone()
+
+            # Update `iss_login` field to False      
+            cur.execute('UPDATE "User" SET "iss_login" = FALSE WHERE "user_id" = %s', (user,))    
+            return jsonify({"message": "Logout Successful"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 @app.errorhandler(404)
 def not_found_error(error):
