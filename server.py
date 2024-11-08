@@ -153,7 +153,7 @@ def login_user():
 
         # Update `iss_login` field to True
         with get_db_cursor() as cur:
-            cur.execute('UPDATE "User" SET "iss_login" = TRUE WHERE "user_id" = %s', (user[0],))
+            cur.execute('UPDATE "User" SET "iss_login" = "TRUE" WHERE "user_id" = %s', (user[0],))
 
         return jsonify({"message": "Login successful"}), 200
 
