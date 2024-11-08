@@ -152,7 +152,7 @@ def login_user():
                 return jsonify({"message": "Invalid username or password"})
             else:
                 # Update `iss_login` field to True      
-                cur.execute('UPDATE "User" SET "iss_login" = "TRUE" WHERE "user_id" = %s', (user[0],))    
+                cur.execute('UPDATE "User" SET "iss_login" = TRUE WHERE "user_id" = %s', (user[0],))    
                 return jsonify({"message": "Login successful"})
 
     except Exception as e:
