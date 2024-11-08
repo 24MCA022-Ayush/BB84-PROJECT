@@ -119,13 +119,16 @@ def create_user():
 
         # Insert new user into the database
 
-        with get_db_cursor() as cur:
-            cur.execute("""
-                INSERT INTO "User" ("full_name", "user_name", "password")
-                VALUES (%s, %s, %s)
-            """, (fname, uname, pas))
+        try:
+            with get_db_cursor() as cur:
+                cur.execute("""
+                    INSERT INTO "User" ("full_name", "user_name", "password")
+                    VALUES (%s, %s, %s)
+                """, (fname, uname, pas))
 
-        return jsonify({"message": f"User '{uname}' created successfully"})
+            return jsonify({"message": f"User '{uname}' created successfully"})
+        except Exception as e:
+            return jsonify("User Already Exists.")
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
