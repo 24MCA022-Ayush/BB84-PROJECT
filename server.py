@@ -113,9 +113,9 @@ def store_encrypted_message():
 def create_user():
     try:
         data = request.get_json()
-        full_name = data['full_name']
-        user_name = data['user_name']
-        password = data['password']
+        fname = data['full_name']
+        uname = data['user_name']
+        pas = data['password']
 
         # Insert new user into the database
 
@@ -123,9 +123,9 @@ def create_user():
             cur.execute("""
                 INSERT INTO "User" ("full_name", "user_name", "password")
                 VALUES (%s, %s, %s)
-            """, (full_name, user_name, password))
+            """, (fname, uname, pas))
 
-        return jsonify({"message": f"User '{user_name}' created successfully"})
+        return jsonify({"message": f"User '{uname}' created successfully"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
