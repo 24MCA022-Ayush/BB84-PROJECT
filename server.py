@@ -148,7 +148,7 @@ def login_user():
             cur.execute('SELECT "user_id", "password" FROM "User" WHERE "user_name" = %s', (user_name,))
             user = cur.fetchone()
 
-            if not user or user[1]==password:
+            if not user or user[1]!=password:
                 return jsonify({"message": "Invalid username or password"})
             else:
                 # Update `iss_login` field to True      
