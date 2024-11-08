@@ -126,9 +126,9 @@ def create_user():
                     INSERT INTO "User" ("full_name", "user_name", "password")
                     VALUES (%s, %s, %s)
                     """, (fname, uname, pas))
-                return jsonify({"message": f"User '{uname}' created successfully"})
+                return jsonify({"message": f"\nUser '{uname}' created successfully\nYou can now login with your credentials."})
             except Exception as e:
-                return jsonify({"message":"User Already Exists."})
+                return jsonify({"message":"\nUser Already Exists."})
         
 
     except Exception as e:
