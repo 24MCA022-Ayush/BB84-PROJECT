@@ -102,7 +102,7 @@ def store_encrypted_message():
         #    """, (1, 2, decrypted_message, False))
             
         return jsonify({
-            "message": "Message stored successfully\n\n"
+            "message": "Message stored successfully"
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
